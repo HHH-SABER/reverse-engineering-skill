@@ -68,13 +68,20 @@ reverse-engineering-skill/
 
 ## 关于语料原文（可选依赖）
 
-语料根路径**只在 `references/corpus-index.md` 顶部定义一处**，其余文件引用它。本机默认：
+语料根**只在 `references/corpus-index.md` 顶部定义一处**，其余文件引用它。**语料不随本仓分发**（第三方版权），所以仓库里留的是占位符 `<corpus-root>/`，实际路径靠环境变量：
 
-`<corpus-root>/`
+```powershell
+# Windows（用户级，新开终端生效）
+setx RE_CORPUS_ROOT "D:\corpus\reverse-engineering-corpus\wuaipojie-distilled"
+```
+```bash
+# *nix
+export RE_CORPUS_ROOT="$HOME/corpus/reverse-engineering-corpus/wuaipojie-distilled"
+```
 
-- **本机安装**：路径已就绪，agent 做任务时会按索引读原文（图文含完整操作细节），效果最佳。
-- **其它机器安装**：没有语料库也能用（SKILL.md 与各 reference 自足），但会失去「回读原文」能力。语料换了位置时**设置环境变量 `RE_CORPUS_ROOT`** 指向实际根目录即可，不必改文件。
-- 附件与样本：语料根上一级有 `附件\` 与 `附件索引.md`。
+- **已配 `RE_CORPUS_ROOT`**：agent 做任务时会按索引回读原文（图文含完整操作细节），效果最佳。
+- **没配**：技能仍可用（`SKILL.md` 与各 reference 自足），但会失去「回读原文」能力；技能应**主动询问语料位置**，而不是静默跳过。
+- 附件与样本：语料根的同级（或上一级）有 `附件/` 与 `附件索引.md`，**不入库**，需本地自备。
 
 ## 使用边界
 

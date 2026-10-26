@@ -33,7 +33,26 @@ param(
 $ErrorActionPreference = 'Stop'
 
 if (-not $PackageDir) { $PackageDir = Split-Path -Parent $PSScriptRoot }
-if (-not $ZipPath)    { $ZipPath = Join-Path (Split-Path -Parent $PackageDir) 'reverse-engineering-skill.zip' }
+
+# Git-aware zip target. This skill now lives inside a git repo (skills/<name>/),
+# where the zip is a legacy artifact - git is the distribution channel. Writing
+# the zip next to the skill dir would drop it inside the repo, so when a .git is
+# found in any ancestor the default becomes "no zip"; pass -ZipPath to force one.
+$repoRoot = $null
+if (-not $ZipPath) {
+    $probe = $PackageDir
+    while ($true) {
+        if (Test-Path -LiteralPath (Join-Path $probe '.git')) { $repoRoot = $probe; break }
+        $parent = Split-Path -Parent $probe
+        if (-not $parent -or $parent -eq $probe) { break }
+        $probe = $parent
+    }
+    if ($repoRoot) {
+        $ZipPath = $null
+    } else {
+        $ZipPath = Join-Path (Split-Path -Parent $PackageDir) 'reverse-engineering-skill.zip'
+    }
+}
 
 if (-not (Test-Path -LiteralPath (Join-Path $PackageDir 'SKILL.md'))) {
     throw "package dir has no SKILL.md: $PackageDir"
@@ -70,7 +89,10 @@ foreach ($d in $LiveDir) {
 
 # 2) repack the zip (whole folder; entry prefix = folder name)
 if ($WhatIf) {
-    Write-Output "zip    : [WhatIf] would repack -> $ZipPath"
+    if ($ZipPath) { Write-Output "zip    : [WhatIf] would repack -> $ZipPath" }
+    else          { Write-Output "zip    : [WhatIf] would skip (git repo: $repoRoot)" }
+} elseif (-not $ZipPath) {
+    Write-Output "zip    : skipped - git repo detected at $repoRoot; pass -ZipPath to force"
 } else {
     if (Test-Path -LiteralPath $ZipPath) { Remove-Item -LiteralPath $ZipPath -Force }
     Compress-Archive -Path $PackageDir -DestinationPath $ZipPath -CompressionLevel Optimal
