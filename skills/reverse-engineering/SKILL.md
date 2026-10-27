@@ -7,7 +7,7 @@ metadata:
 
 # 逆向工程：语料 · 安装器 · 中文遗留栈
 
-> ⚠️ **本技能在 2026-10-20 被有意收窄。** 原先 10 个 reference 里有 7 个的领域已被更成熟的第三方技能完整覆盖，继续维护等于重复造轮子。那 7 份已归档到 `_archive/2026-10-20-narrowed/`，不再随技能分发；内容需要时仍可读，但**不要在这里继续扩写**。
+> ⚠️ **本技能在 2026-10-20 被有意收窄。** 原先 10 个 reference 里有 7 个的领域已被更成熟的第三方技能完整覆盖，继续维护等于重复造轮子。那 7 份归档在维护者的本机 `_archive/2026-10-20-narrowed/`（**未随本仓/本技能分发**，需要时向维护者索取），**不要在这里继续扩写**已被上游覆盖的领域。
 
 ## 先判断：这个任务归谁
 
@@ -94,8 +94,17 @@ python <技能目录>/scripts/pe_recon.py 目标.exe
 
 ## 维护
 
-**源真身 = 本技能目录**（即包目录 `reverse-engineering-skill/`）；各 agent 下的安装副本（`$DSH_HOME\skills\reverse-engineering`、`~\.zcode\skills\reverse-engineering` 等）与 `reverse-engineering-skill.zip` 都是派生物，不要直接改安装副本再反向覆盖。
+**源真身 = 本 git 仓里的 `skills/reverse-engineering/`**（仓根有 `CATALOG.md`、`docs/`、`skills/_template/`）。各 agent 下的安装副本（`$DSH_HOME\skills\reverse-engineering`、`~\.zcode\skills\reverse-engineering` 等）都是**派生物**——不要直接改安装副本再反向覆盖。
 
-改完运行 `powershell -ExecutionPolicy Bypass -File scripts/sync_skill.ps1`（默认镜像到所有已存在的安装副本 + 重打包 zip，结束输出每个目标文件数与 zip 的 SHA256）。改动较大时跑 `references/test-prompts.md` 里的回归提示词。
+改完：
+
+```bash
+powershell -ExecutionPolicy Bypass -File scripts/sync_skill.ps1   # 镜像到所有已存在的安装副本
+git add -A && git commit -m "fix(skills): reverse-engineering — <改了什么>" && git push
+```
+
+`sync_skill.ps1` 是 **git 感知**的：祖先目录存在 `.git` 时**不再打 zip**（zip 是 git 之前的旧分发手段，且会把文件落进仓库的 `skills/` 目录），需要 zip 时显式传 `-ZipPath`。它结束时会输出每个目标的文件数，便于核对。改动较大时跑 `references/test-prompts.md` 里的回归提示词。
+
+**语料改动走另一个仓**：语料（411 篇）在私有仓 `reverse-engineering-corpus`，不在这里。新增文章后回本仓按主题补 `references/corpus-index.md`，两仓各自提交。
 
 **不要再往里加通用逆向内容**——先看上方「先判断」表；该领域若已被 `reverse-skill` / REA 覆盖，就只加一行路由，不加正文。
